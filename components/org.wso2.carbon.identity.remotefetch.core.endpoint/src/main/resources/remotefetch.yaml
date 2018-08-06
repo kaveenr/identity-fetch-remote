@@ -1,0 +1,393 @@
+swagger: '2.0'
+######################################################
+# Prolog
+######################################################
+info:
+  version: "1.0.0"
+  title: "WSO2 Remote Fetch Core REST API"
+  description: |
+    This document specifies a **Remote Fetch Core RESTfulAPI** for WSO2 **Identity Server** .
+
+    It is written with [swagger 2](http://swagger.io/).
+
+  contact:
+    name: "WSO2"
+    url: "http://wso2.com/products/identity-server/"
+    email: "architecture@wso2.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+######################################################
+# The fixed parts of the URLs of the API
+######################################################
+
+# The schemes supported by the API
+schemes:
+  - https
+
+# The domain of the API.
+# This is configured by the customer during deployment.
+# The given host is just an example.
+# host: apis.is.com
+
+# The base path of the API.
+# Will be prefixed to all paths.
+# if the tenant domain is carbon.super basepath can be /api/identity/remote-fetch/v1.0 like this too.
+
+basePath: /t/{tenant-domain}/api/identity/remote-fetch/v1.0
+
+# The following media types can be passed as input in message bodies of the API.
+# The actual media type must be specified in the Content-Type header field of the request.
+# The default is json, i.e. the Content-Type header is not needed to
+# be set, but supporting it serves extensibility.
+consumes:
+  - application/json
+
+# The following media types may be passed as output in message bodies of the API.
+# The media type(s) consumable by the requester is specified in the Accept header field
+# of the corresponding request.
+# The actual media type returned will be specified in the Content-Type header field
+# of the of the response.
+# The default of the Accept header is json, i.e. there is not needed to
+# set the value, but supporting it serves extensibility.
+produces:
+  - application/json
+paths:
+  # Endpoint to get Remote Fetch Configuration Status
+  "/status":
+    get:
+      description: |
+        This API is used to get remote fetch configuration statuses
+      summary: |
+        List Configurations Statuses
+
+      parameters:
+          - $ref: '#/parameters/spTenantDomain'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RemoteFetchConfigurationStatus'
+        400:
+          description: Bad Request
+          schema:
+             $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+             $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+             $ref: '#/definitions/Error'
+      tags:
+        - Remote Fetch Configuration Status
+
+  # Endpoint used to add Remote Fetch Configurations
+  "/configurations":
+    post:
+      description: |
+         This endpoint is to store or update configurations
+      summary: |
+        Add or update configuration
+      parameters:
+        - $ref: '#/parameters/spTenantDomain'
+        -
+          name: configuration
+          in: body
+          description: configuration object to store or update
+          required: true
+          schema:
+            $ref: '#/definitions/RemoteFetchConfiguration'
+      responses:
+        201:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RemoteFetchConfiguration'
+        400:
+          description: Bad Request
+          schema:
+             $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+             $ref: '#/definitions/Error'
+        409:
+          description: Conflict
+          schema:
+             $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+             $ref: '#/definitions/Error'
+      tags:
+        - Remote Fetch Configuration Management
+
+  "/configurations/{configurationId}":
+    get:
+      description: |
+        Get Configuration for given Id
+      summary: |
+        Get Configuration
+      parameters:
+        - $ref: '#/parameters/spTenantDomain'
+        - $ref: '#/parameters/configurationIdPath'
+
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RemoteFetchConfiguration'
+        400:
+          description: Bad Request
+          schema:
+             $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+             $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+             $ref: '#/definitions/Error'
+      tags:
+        - Remote Fetch Configuration Management
+    delete:
+      description: |
+        Delete configuration for given id
+      summary: |
+        Delete Configuration
+      parameters:
+        - $ref: '#/parameters/spTenantDomain'
+        - $ref: '#/parameters/configurationIdPath'
+      responses:
+        200:
+          description: OK
+        404:
+          description: Not Found
+          schema:
+             $ref: '#/definitions/Error'
+        400:
+          description: Bad Request
+          schema:
+             $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+             $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+             $ref: '#/definitions/Error'
+      tags:
+        - Remote Fetch Configuration Management
+
+  "/describe/components/{componentType}":
+    get:
+      description: |
+        describe available components for given type
+      summary: |
+        Describe available components
+      parameters:
+        - $ref: '#/parameters/componentTypePath'
+        - $ref: '#/parameters/spTenantDomain'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RemoteFetchComponentDefinition'
+        400:
+          description: Bad Request
+          schema:
+             $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+             $ref: '#/definitions/Error'
+        404:
+          description: Not Found
+          schema:
+             $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+             $ref: '#/definitions/Error'
+      tags:
+        - Components
+
+definitions:
+#-----------------------------------------------------
+# The Error Response  object
+#-----------------------------------------------------
+  Error:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+      description:
+        type: string
+
+#-----------------------------------------------------
+# Remote Fetch ConfigurationStatus
+#-----------------------------------------------------
+  RemoteFetchConfigurationStatus:
+    type: object
+    properties:
+      id:
+        type: "number"
+      isEnabled:
+        type: "boolean"
+      userName:
+        type: "string"
+      repositoryManagerType:
+        type: "string"
+      actionListenerType:
+        type: "string"
+      configurationDeployerType:
+        type: "string"
+      successfulDeployments:
+        type: "integer"
+      failedDeployments:
+        type: "integer"
+      lastDeployment:
+        type: "string"
+        format: "date-time"
+
+#-----------------------------------------------------
+# Remote Fetch Configuration
+#-----------------------------------------------------
+  RemoteFetchConfiguration:
+    type: object
+    required:
+      - "isEnabled"
+      - "repositoryManage"
+      - "actionListener"
+      - "configurationDeployer"
+      - "userName"
+    properties:
+      id:
+        type: "number"
+      tenantId:
+        type: "number"
+      isEnabled:
+        type: "boolean"
+      userName:
+        type: "string"
+      repositoryManager:
+        $ref: '#/definitions/RemoteFetchComponent'
+      actionListener:
+        $ref: '#/definitions/RemoteFetchComponent'
+      configurationDeployer:
+        $ref: '#/definitions/RemoteFetchComponent'
+
+#-----------------------------------------------------
+# Remote Fetch Component
+#-----------------------------------------------------
+  RemoteFetchComponent:
+    required:
+      - "identifier"
+      - "type"
+    properties:
+      identifier:
+        type: "string"
+      type:
+        type: "string"
+      attributes:
+        type: array
+        items:
+          $ref: '#/definitions/RemoteFetchComponentAttribute'
+
+#-----------------------------------------------------
+# Remote Fetch Component Attribute
+#-----------------------------------------------------
+  RemoteFetchComponentAttribute:
+    required:
+      - "identifier"
+      - "value"
+    properties:
+      identifier:
+        type: "string"
+      value:
+        type: "string"
+
+#-----------------------------------------------------
+# Remote Fetch Component Definition
+#-----------------------------------------------------
+  RemoteFetchComponentDefinition:
+    properties:
+      identifier:
+        type: "string"
+      type:
+        type: "string"
+      attributeDefinitions:
+        type: array
+        items:
+          $ref: '#/definitions/RemoteFetchComponentAttributeDefinition'
+
+#-----------------------------------------------------
+# Remote Fetch Component Attribute Definition
+#-----------------------------------------------------
+  RemoteFetchComponentAttributeDefinition:
+    properties:
+      identifier:
+        type: "string"
+      name:
+        type: "string"
+      helpText:
+        type: "string"
+      fieldType:
+        type: "string"
+      isMandatory:
+        type: "boolean"
+      defaultValues:
+        type: array
+        items:
+          type: "string"
+      validationRegex:
+        type: "string"
+
+
+#-----------------------------------------------------
+# Parameters
+#-----------------------------------------------------
+parameters:
+  spTenantDomain:
+    name: spTenantDomain
+    in: query
+    description: Service provider tenant domain
+    required: false
+    type: string
+
+  isEnabledConfig:
+    name: isEnabled
+    in: query
+    description: is confgiuration enabled
+    type: boolean
+    required: true
+
+  configurationIdPath:
+    name: configurationId
+    in: path
+    description:  This represents the Configuration Id.
+    required: true
+    type: 'integer'
+
+  componentTypePath:
+    name: componentType
+    in: path
+    description:  This represents the type of the component
+    required: true
+    type: 'string'
+    enum:
+      - repository-manager
+      - action-listener
+      - configuration-deployer
